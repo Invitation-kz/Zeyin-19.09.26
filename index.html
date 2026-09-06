@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta property="og:title" content="Зейін 1 жас тұсаукесер">
+<meta property="og:description" content="19.09.2026">
+<title>Зейін 1 жас тұсаукесер!</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Piazzolla:wght@100;300;400;600&display=swap" rel="stylesheet">
+
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  body {
+    font-family: 'Piazzolla', serif;
+    overflow-x: hidden;
+    background-color: #f1eff1;   /* ← новый цвет фона */
+  }
+  img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+  a {
+    display: block;
+  }
+
+  /* Все остальные элементы — прозрачные, без своего фона */
+  .element-animation {
+    opacity: 0;
+    transition: opacity 1.2s ease;
+    background: transparent;
+  }
+  .element-animation.element-show {
+    opacity: 1;
+  }
+
+  img.rot {
+    width: 35%;
+    margin: 0 auto;
+    -webkit-animation: rot 5s linear 0s infinite;
+    animation: rot 5s linear 0s infinite;
+  }
+  @-webkit-keyframes rot { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+  @keyframes rot { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+  /* ТАЙМЕР */
+  .timer-wrapper {
+    position: relative;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+    background: transparent;
+  }
+  .countdown-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px 20px;
+    padding: 10px 20px;
+    background: transparent;
+  }
+  .countdown-item {
+    text-align: center;
+    display: inline-block;
+    min-width: 40px;
+  }
+  .countdown-item .number {
+    display: block;
+    font-size: clamp(2.2rem, 8vw, 3.5rem);
+    font-weight: 300;
+    color: #000000;
+    letter-spacing: 2px;
+    line-height: 1;
+  }
+  .countdown-item .label {
+    display: block;
+    font-size: clamp(0.6rem, 1.5vw, 0.9rem);
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: #000000;
+    margin-top: 4px;
+    font-weight: 300;
+  }
+  .countdown-divider {
+    font-size: clamp(1.5rem, 5vw, 3rem);
+    font-weight: 100;
+    color: #000000;
+    padding-top: 5px;
+    display: inline-block;
+  }
+
+  /* ФОРМА */
+  .form-wrapper {
+    padding: 10px 15px 30px;
+    background: transparent;
+  }
+  .form-container {
+    max-width: 450px;
+    margin: 0 auto;
+    background: transparent;
+  }
+  .form-inner {
+    text-align: center;
+    background: transparent;
+  }
+  .radio-group {
+    text-align: left;
+    margin-bottom: 14px;
+    background: transparent;
+  }
+  .radio-group label {
+    font-weight: 300;
+    margin-left: 4px;
+    color: #543e36;
+    font-size: 1rem;
+  }
+  .radio-group input[type="radio"] {
+    margin-right: 4px;
+    accent-color: #543e36;
+    width: 15px;
+    height: 15px;
+  }
+  .form-inner textarea {
+    width: 100%;
+    border: none;
+    border-bottom: 1px solid #543e36;
+    border-radius: 0;
+    padding: 8px 4px 4px;
+    font-size: 0.95rem;
+    background: transparent;
+    resize: vertical;
+    min-height: 40px;
+    font-family: inherit;
+    color: #543e36;
+    outline: none;
+    transition: border-color 0.3s;
+  }
+  .form-inner textarea:focus {
+    border-bottom-color: #543e36;
+  }
+  .form-inner textarea::placeholder {
+    color: #6f8a53;
+    font-weight: 200;
+  }
+  .btn-submit {
+    background: transparent;
+    color: #543e36;
+    border: 1px solid #543e36;
+    border-radius: 30px;
+    padding: 10px 30px;
+    font-size: 0.95rem;
+    font-weight: 300;
+    letter-spacing: 2px;
+    width: 100%;
+    transition: 0.3s;
+    margin-top: 14px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .btn-submit:hover {
+    background: #543e36;
+    color: #ffffff;
+  }
+
+  /* МОДАЛЬНОЕ ОКНО (единственный элемент со своим фоном — это карточка поверх затемнения) */
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(4px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    opacity: 1;
+    transition: opacity 0.5s ease;
+  }
+  .modal-overlay.hidden {
+    opacity: 0;
+    pointer-events: none;
+  }
+  .modal-content {
+    background: #ffffff;
+    padding: 40px 30px 45px;
+    border-radius: 20px;
+    text-align: center;
+    max-width: 380px;
+    width: 85%;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    border: 1px solid #543e36;
+  }
+  .modal-content img {
+    width: 100%;
+    max-width: 250px;
+    margin: 0 auto 20px;
+    border-radius: 12px;
+    border: 1px solid #ddd;
+  }
+  .modal-content button {
+    background: #543e36;
+    color: #ffffff;
+    border: 1px solid #543e36;
+    padding: 14px 40px;
+    border-radius: 50px;
+    font-size: 1.1rem;
+    font-weight: 300;
+    letter-spacing: 2px;
+    cursor: pointer;
+    transition: 0.3s;
+    font-family: 'Piazzolla', serif;
+  }
+  .modal-content button:hover {
+    background: #ffffff;
+    color: #543e36;
+    transform: scale(1.03);
+  }
+  .modal-content button:active {
+    transform: scale(0.97);
+  }
+
+  body.modal-open {
+    overflow: hidden;
+  }
+</style>
+</head>
+<body>
+
+<!-- МОДАЛЬНОЕ ОКНО -->
+<div id="musicModal" class="modal-overlay">
+  <div class="modal-content">
+    <img src="photo.jpg" alt="приглашение">
+    <button id="playMusicBtn">Шақыртуды ашу</button>
+  </div>
+</div>
+
+<!-- АУДИО -->
+<audio id="backgroundMusic" loop preload="auto">
+  <source src="music.mp3" type="audio/mpeg">
+  Ваш браузер не поддерживает воспроизведение музыки.
+</audio>
+
+<!-- ФОТО 1 -->
+<div class="element-animation"><img src="photo1.jpg" alt="photo1"></div>
+
+<!-- ФОТО 2 -->
+<div class="element-animation"><img src="photo2.jpg" alt="photo2"></div>
+
+<!-- ФОТО 3 (анимация вращения) -->
+<div class="element-animation" style="display:flex; justify-content:center;">
+  <img class="rot" src="photo3.png" alt="photo3">
+</div>
+
+<!-- ФОТО 4 -->
+<div class="element-animation"><img src="photo4.jpg" alt="photo4"></div>
+
+<!-- ФОТО 5 (КАРТА / МЕЙРАМХАНА) -->
+<div class="element-animation">
+  <a href="https://2gis.kz/uralsk/geo/70000001025546404" target="_blank">
+    <img src="photo5.jpg" alt="photo5">
+  </a>
+</div>
+
+<!-- ФОТО 6 -->
+<div class="element-animation"><img src="photo6.jpg" alt="photo6"></div>
+
+ <!-- ФОТО 7 -->
+<div class="element-animation"><img src="photo7.jpg" alt="photo7"></div>
+
+<!-- ТАЙМЕР -->
+<div class="timer-wrapper element-animation">
+  <div class="countdown-container">
+    <div class="countdown-item">
+      <span class="number" id="days">00</span>
+      <span class="label">Күн</span>
+    </div>
+    <span class="countdown-divider">:</span>
+    <div class="countdown-item">
+      <span class="number" id="hours">00</span>
+      <span class="label">Сағат</span>
+    </div>
+    <span class="countdown-divider">:</span>
+    <div class="countdown-item">
+      <span class="number" id="minutes">00</span>
+      <span class="label">Минут</span>
+    </div>
+    <span class="countdown-divider">:</span>
+    <div class="countdown-item">
+      <span class="number" id="seconds">00</span>
+      <span class="label">Секунд</span>
+    </div>
+  </div>
+</div>
+
+ <!-- ФОТО 8 -->
+<div class="element-animation"><img src="photo8.jpg" alt="photo8"></div>
+
+<!-- ОПРОС -->
+<div class="form-wrapper">
+  <div class="form-container">
+    <form id="form">
+      <div class="form-inner">
+        <div class="radio-group">
+          <p style="font-weight:300; margin-bottom:6px; color:#543e36;">Жұбыңызбен келсеңіз, есімін жазыңыз</p>
+          <textarea name="message" maxlength="100" id="message" rows="1" placeholder="Есіміңіз"></textarea>
+        </div>
+
+        <div class="radio-group">
+          <input type="radio" id="q1_yes" name="attend" value="Әрине келемін" required>
+          <label for="q1_yes">Әрине келемін</label><br>
+          <input type="radio" id="q1_no" name="attend" value="Өкінішке орай бара алмаймын">
+          <label for="q1_no">Өкінішке орай бара алмаймын</label>
+        </div>
+
+        <div class="radio-group">
+          <p style="font-weight:300; margin-bottom:6px; color:#543e36;">Неше адам болып келесіздер?</p>
+          <div style="display:flex; align-items:center; gap:14px; justify-content:center;">
+            <button type="button" id="decrease" style="background:none; border:1px solid #543e36; color:#543e36; border-radius:50%; width:34px; height:34px; font-size:1.3rem; cursor:pointer;">−</button>
+            <span id="peopleCount" style="font-size:1.3rem; min-width:24px; text-align:center; color:#543e36;">1</span>
+            <button type="button" id="increase" style="background:none; border:1px solid #543e36; color:#543e36; border-radius:50%; width:34px; height:34px; font-size:1.3rem; cursor:pointer;">+</button>
+          </div>
+          <input type="hidden" name="choice" id="choiceHidden" value="1">
+        </div>
+
+        <button type="submit" class="btn-submit">Жауапты жіберемін</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ФОТО 9 (INSTAGRAM) -->
+<div class="element-animation">
+  <a href="https://www.instagram.com/toiga_shaqyrtugo/" target="_blank">
+    <img src="photo9.jpg" alt="photo9">
+  </a>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const modal = document.getElementById('musicModal');
+    const playBtn = document.getElementById('playMusicBtn');
+    const audio = document.getElementById('backgroundMusic');
+
+    function openInvitation() {
+      audio.play().catch(function (err) {
+        console.warn('Не удалось запустить музыку:', err);
+      });
+
+      modal.classList.add('hidden');
+      setTimeout(function () {
+        modal.style.display = 'none';
+      }, 500);
+
+      document.body.classList.remove('modal-open');
+
+      document.querySelectorAll('.element-animation').forEach(function (el) {
+        el.classList.add('element-show');
+      });
+    }
+
+    playBtn.addEventListener('click', openInvitation);
+
+   // АВТОСКРОЛЛ ПОСЛЕ 5 СЕКУНД БЕЗДЕЙСТВИЯ
+let autoScrollInterval;
+let inactivityTimer;
+
+function startAutoScroll() {
+  if (autoScrollInterval) return;
+
+  autoScrollInterval = setInterval(() => {
+    const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+
+    if (window.scrollY >= maxScroll - 5) {
+      stopAutoScroll();
+      return;
+    }
+
+    window.scrollBy({
+      top: 1,
+      behavior: 'auto'
+    });
+  }, 20); // скорость прокрутки
+}
+
+function stopAutoScroll() {
+  clearInterval(autoScrollInterval);
+  autoScrollInterval = null;
+}
+
+function resetInactivityTimer() {
+  stopAutoScroll();
+
+  clearTimeout(inactivityTimer);
+  inactivityTimer = setTimeout(() => {
+    startAutoScroll();
+  }, 5000);
+}
+
+['mousemove', 'touchstart', 'touchmove', 'wheel', 'scroll', 'keydown']
+  .forEach(event => {
+    window.addEventListener(event, resetInactivityTimer, { passive: true });
+  });
+
+resetInactivityTimer();
+
+    // Фотолардың бірте-бірте пайда болуы
+    const observer = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('element-show');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.element-animation').forEach(function (el) {
+      observer.observe(el);
+    });
+
+    // ТАЙМЕР — 10.10.2026, 13:00
+    function updateCountdown() {
+      const endDate = new Date("September 19, 2026 19:00:00").getTime();
+      const now = Date.now();
+      const distance = endDate - now;
+
+      if (distance < 0) {
+        document.getElementById("days").textContent = "00";
+        document.getElementById("hours").textContent = "00";
+        document.getElementById("minutes").textContent = "00";
+        document.getElementById("seconds").textContent = "00";
+        return;
+      }
+
+      const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+      document.getElementById("days").textContent = String(days).padStart(2, '0');
+      document.getElementById("hours").textContent = String(hours).padStart(2, '0');
+      document.getElementById("minutes").textContent = String(minutes).padStart(2, '0');
+      document.getElementById("seconds").textContent = String(seconds).padStart(2, '0');
+    }
+    updateCountdown();
+    setInterval(updateCountdown, 1000);
+
+    // СЧЁТЧИК КОЛИЧЕСТВА
+    let count = 1;
+    const peopleCountEl = document.getElementById('peopleCount');
+    const choiceHiddenEl = document.getElementById('choiceHidden');
+    document.getElementById('decrease').addEventListener('click', function () {
+      if (count > 1) {
+        count--;
+        peopleCountEl.textContent = count;
+        choiceHiddenEl.value = count;
+      }
+    });
+    document.getElementById('increase').addEventListener('click', function () {
+      count++;
+      peopleCountEl.textContent = count;
+      choiceHiddenEl.value = count;
+    });
+
+    // ФОРМА
+    const URL_APP = "https://script.google.com/macros/s/AKfycbymijfvj3SUZLicTzCNNuXovDJaigSGXkzjx7_rRQSj_rRdhgKrBn7dU2KMXXZY51T-/exec"; // сюда вставите ссылку на Google-таблицу (Apps Script)
+    const form = document.querySelector("#form");
+
+    form.addEventListener("submit", async function (ev) {
+      ev.preventDefault();
+
+      const message = document.querySelector("[name=message]");
+      const attend = document.querySelector("[name=attend]:checked");
+      const choice = document.querySelector("[name=choice]");
+
+      const details = {
+        name: attend ? attend.value : '',
+        choice: choice ? choice.value : '',
+        message: message.value.trim(),
+      };
+
+      if (URL_APP) {
+        fetch(URL_APP, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          mode: "no-cors",
+          body: JSON.stringify(details),
+        }).catch(function (err) {
+          console.error('Error:', err);
+          alert("Ошибка!");
+        });
+      }
+
+      if (attend) attend.checked = false;
+      message.value = '';
+      count = 1;
+      peopleCountEl.textContent = count;
+      choiceHiddenEl.value = count;
+      alert('Жауабыңызға рахмет!');
+    });
+  });
+</script>
+
+</body>
+</html>
